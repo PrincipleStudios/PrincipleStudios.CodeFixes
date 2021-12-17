@@ -7,6 +7,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Build.Locator;
+using PrincipleStudios.CodeFixes;
 
 var services = new ServiceCollection();
 services.AddLogging(logging => logging.AddConsole());

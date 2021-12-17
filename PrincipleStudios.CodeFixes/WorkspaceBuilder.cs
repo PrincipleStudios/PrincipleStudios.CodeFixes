@@ -6,6 +6,8 @@
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Extensions.Logging;
 
+namespace PrincipleStudios.CodeFixes;
+
 class WorkspaceBuilder
 {
     private readonly ILogger<WorkspaceBuilder> logger;
@@ -18,7 +20,7 @@ class WorkspaceBuilder
     public async Task<MSBuildWorkspace> BuildWorkspace(IEnumerable<string> projects)
     {
         var workspace = MSBuildWorkspace.Create();
-        workspace.WorkspaceFailed += (sender, args) => logger.LogError($"{args.Diagnostic.Kind}: {args.Diagnostic.Message}");
+        workspace.WorkspaceFailed += (sender, args) => logger.WorkspaceFailed(args.Diagnostic.Kind, args.Diagnostic.Message);
         try
         {
             await Task.WhenAll(projects.Select(project => workspace.OpenProjectAsync(project)));
@@ -31,4 +33,5 @@ class WorkspaceBuilder
             throw;
         }
     }
+
 }
