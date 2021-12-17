@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PrincipleStudios.CodeFixes": {
+      "commandName": "Project",
+      "commandLineArgs": "--project $(ProjectDir)/PrincipleStudios.CodeFixes.csproj"
+    }
+  }
+}
