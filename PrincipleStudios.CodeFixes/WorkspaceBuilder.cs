@@ -24,7 +24,7 @@ class WorkspaceBuilder
         try
         {
             await Task.WhenAll(projects.Select(project => workspace.OpenProjectAsync(project)));
-    
+
             return workspace;
         }
         catch
