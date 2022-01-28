@@ -162,7 +162,7 @@ class ProjectFixer
         return (false, successful);
     }
 
-    private async Task<bool> TryApplyChanges(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace workspace, Document document, CodeAction codeAction, CancellationToken cancellationToken)
+    private static async Task<bool> TryApplyChanges(Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace workspace, Document document, CodeAction codeAction, CancellationToken cancellationToken)
     {
         var operations = await codeAction.GetOperationsAsync(cancellationToken);
         var applyChanges = operations.OfType<ApplyChangesOperation>().FirstOrDefault();
@@ -196,7 +196,7 @@ class ProjectFixer
         return diagnostics.Where(diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden).Where(d => fixProviders.ContainsKey(d.Id)).FirstOrDefault();
     }
 
-    async Task<ImmutableArray<Diagnostic>> GetAllFixableDiagnostics(Project project, ImmutableArray<DiagnosticAnalyzer> targetAnalyzers)
+    static async Task<ImmutableArray<Diagnostic>> GetAllFixableDiagnostics(Project project, ImmutableArray<DiagnosticAnalyzer> targetAnalyzers)
     {
         var compilation = await project.GetCompilationAsync();
 
