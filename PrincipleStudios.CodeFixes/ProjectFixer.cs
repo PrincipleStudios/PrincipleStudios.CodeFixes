@@ -2,6 +2,8 @@
 // Based on code from:
 // - https://github.com/Vannevelj/RoslynTester/blob/master/RoslynTester/RoslynTester/Helpers/CodeFixVerifier.cs#L109
 // - https://github.com/kzu/AutoCodeFix
+// - https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/74591294646621a7c77b0b8bfa8bbb5b694ca660/StyleCop.Analyzers/StyleCopTester/Program.cs#L314
+// - https://github.com/kzu/AutoCodeFix/blob/50aace00922eb35d89bcdc77ef83da50e06fd50c/src/AutoCodeFix.Tasks/ApplyCodeFixes.cs
 
 using Humanizer;
 using Microsoft.CodeAnalysis;
@@ -49,10 +51,10 @@ class ProjectFixer
 
             var nextProviders = fixProviders[diagnostic.Id];
 
-            //var manyResult = await FixMany(project, workspace, cancellationToken, allDiagnostics, diagnostic, nextProviders);
-            //if (manyResult.HardFailure)
-            //    return false;
-            //if (!manyResult.Successful)
+            var manyResult = await FixMany(project, workspace, cancellationToken, allDiagnostics, diagnostic, nextProviders);
+            if (manyResult.HardFailure)
+                return false;
+            if (!manyResult.Successful)
             {
                 var result = await FixOne(workspace, hardFailure, diagnostic, document, nextProviders, cancellationToken);
                 if (result.HardFailure)
@@ -71,6 +73,11 @@ class ProjectFixer
 
     private async Task<(bool HardFailure, bool Successful)> FixMany(Project project, Microsoft.CodeAnalysis.MSBuild.MSBuildWorkspace workspace, CancellationToken cancellationToken, ImmutableArray<Diagnostic> allDiagnostics, Diagnostic diagnostic, ImmutableArray<CodeFixProvider> nextProviders)
     {
+        if (appliedFixes.ContainsKey(diagnostic.Id))
+        {
+            logger.ApplyingCodeFixForMultipleDidNotMakeAllFixes(diagnostic.Id, diagnostic.GetMessage());
+            return (true, false);
+        }
         var successful = false;
         foreach (var provider in nextProviders)
         {
@@ -106,82 +113,6 @@ class ProjectFixer
                         return (true, false);
                     }
                 }
-
-
-                //string codeActionEquivalenceKey;
-                //FixAllContext.DiagnosticProvider fixAllDiagnosticProvider;
-                //var diagnosticIds = allDiagnostics.Select(d => d.Id).Intersect(fixAll.GetSupportedFixAllDiagnosticIds(provider)).ToArray();
-                //var matching = allDiagnostics.Where(d => provider.FixableDiagnosticIds.Contains(d.Id)).ToArray();
-
-                //var codeAction = await fixAll.GetFixAsync(new FixAllContext(project, provider, FixAllScope.Project, codeActionEquivalenceKey, diagnosticIds, fixAllDiagnosticProvider, default));
-
-
-                //if (matching.Length == 0)
-                //    continue;
-
-                // the following code adapted from: https://github.com/kzu/AutoCodeFix/blob/50aace00922eb35d89bcdc77ef83da50e06fd50c/src/AutoCodeFix.Tasks/ApplyCodeFixes.cs
-                //foreach (var fix in matching)
-                //{
-                //    try
-                //    {
-                //        logger.ApplyingCodeFixForMultiple(fix.NumberOfDiagnostics);
-                //        LogMessage($"Calculating fix for {fix.NumberOfDiagnostics} instances.", MessageImportance.Low.ForVerbosity(verbosity));
-                //        var operations = await fix.GetOperationsAsync(cancellationToken);
-                //        var fixAllChanges = operations.OfType<ApplyChangesOperation>().FirstOrDefault();
-                //        if (fixAllChanges != null)
-                //        {
-                //            fixAllChanges.Apply(workspace, cancellationToken);
-                //            fixApplied = true;
-                //            appliedFixes[diagnostic.Id] = appliedFixes.GetOrAdd(diagnostic.Id, 0) + fix.NumberOfDiagnostics;
-                //            project = workspace.CurrentSolution.GetProject(project.Id);
-                //            watch.Stop();
-                //        }
-
-                //        LogMessage($"Applied batch changes in {TimeSpan.FromMilliseconds(fixAllWatch.ElapsedMilliseconds).Humanize()}. This is {fix.NumberOfDiagnostics / fixAllWatch.Elapsed.TotalSeconds:0.000} instances/second.", MessageImportance.Low.ForVerbosity(verbosity));
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //        // Report thrown exceptions
-                //        LogMessage($"The fix '{fix.CodeFixEquivalenceKey}' failed after {TimeSpan.FromMilliseconds(fixAllWatch.ElapsedMilliseconds).Humanize()}: {ex.ToString()}", MessageImportance.High.ForVerbosity(verbosity));
-                //    }
-                //}
-
-
-                ////var group = await CodeFixEquivalenceGroup.CreateAsync(provider, ImmutableDictionary.CreateRange(new[]
-                ////{
-                ////                new KeyValuePair<ProjectId, ImmutableArray<Diagnostic>>(project.Id, diagnostics)
-                ////            }), project.Solution, Token);
-
-                ////// TODO: should we only apply one equivalence group at a time? See https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/74591294646621a7c77b0b8bfa8bbb5b694ca660/StyleCop.Analyzers/StyleCopTester/Program.cs#L314
-                ////if (group.Length > 0)
-                ////{
-                ////    LogMessage($"Applying batch code fix for {diagnostic.Id}: {diagnostic.Descriptor.Title}", MessageImportance.Normal.ForVerbosity(verbosity));
-                ////    var fixAllWatch = Stopwatch.StartNew();
-                ////    foreach (var fix in group)
-                ////    {
-                ////        try
-                ////        {
-                ////            LogMessage($"Calculating fix for {fix.NumberOfDiagnostics} instances.", MessageImportance.Low.ForVerbosity(verbosity));
-                ////            var operations = await fix.GetOperationsAsync(cancellationToken);
-                ////            var fixAllChanges = operations.OfType<ApplyChangesOperation>().FirstOrDefault();
-                ////            if (fixAllChanges != null)
-                ////            {
-                ////                fixAllChanges.Apply(workspace, cancellationToken);
-                ////                fixApplied = true;
-                ////                appliedFixes[diagnostic.Id] = appliedFixes.GetOrAdd(diagnostic.Id, 0) + fix.NumberOfDiagnostics;
-                ////                project = workspace.CurrentSolution.GetProject(project.Id);
-                ////                watch.Stop();
-                ////            }
-
-                ////            LogMessage($"Applied batch changes in {TimeSpan.FromMilliseconds(fixAllWatch.ElapsedMilliseconds).Humanize()}. This is {fix.NumberOfDiagnostics / fixAllWatch.Elapsed.TotalSeconds:0.000} instances/second.", MessageImportance.Low.ForVerbosity(verbosity));
-                ////        }
-                ////        catch (Exception ex)
-                ////        {
-                ////            // Report thrown exceptions
-                ////            LogMessage($"The fix '{fix.CodeFixEquivalenceKey}' failed after {TimeSpan.FromMilliseconds(fixAllWatch.ElapsedMilliseconds).Humanize()}: {ex.ToString()}", MessageImportance.High.ForVerbosity(verbosity));
-                ////        }
-                ////    }
-                ////}
             }
         }
         return (false, successful);
@@ -240,14 +171,6 @@ class ProjectFixer
 
         applyChanges.Apply(workspace, cancellationToken);
 
-        //// According to https://github.com/DotNetAnalyzers/StyleCopAnalyzers/pull/935 and 
-        //// https://github.com/dotnet/roslyn-sdk/issues/140, Sam Harwell mentioned that we should 
-        //// be forcing a re-parse of the document syntax tree at this point. 
-        //var newDoc = await workspace.CurrentSolution.GetDocument(document.Id)!.RecreateDocumentAsync(cancellationToken);
-
-        //if (!workspace.TryApplyChanges(newDoc.Project.Solution))
-        //    throw new InvalidOperationException("Failed to apply changes to workspace.");
-
         return true;
     }
 
@@ -285,58 +208,5 @@ class ProjectFixer
 
         return allDiagnostics;
     }
-
-}
-
-public static partial class Log
-{
-    [LoggerMessage(
-        EventId = 1000,
-        Level = LogLevel.Debug,
-        Message = "Did not find more fixable diagnostics in {timeSpan}")]
-    public static partial void DidNotFindFixableDiagnostics(this ILogger logger, string timeSpan);
-
-    [LoggerMessage(
-        EventId = 1001,
-        Level = LogLevel.Debug,
-        Message = "Found fixable diagnostic {diagnosticId} in {timeSpan}")]
-    public static partial void FoundFixableDiagnostic(this ILogger logger, string diagnosticId, string timeSpan);
-
-    [LoggerMessage(
-        EventId = 1002,
-        Level = LogLevel.Information,
-        Message = "Applying code fix for diagnostic {diagnosticId}: {diagnosticMessage}.")]
-    public static partial void ApplyingCodeFixFor(this ILogger logger, string diagnosticId, string diagnosticMessage);
-
-    [LoggerMessage(
-        EventId = 1003,
-        Level = LogLevel.Error,
-        Message = "{fileLinePositionSpan}: No applicable changes were provided by the code action '{title}' for diagnostic {diagnosticId}: {diagnosticMessage}.")]
-    public static partial void NoApplicableChangesWereProvided(this ILogger logger, string title, string diagnosticId, string diagnosticMessage, FileLinePositionSpan fileLinePositionSpan);
-
-    [LoggerMessage(
-        EventId = 1004,
-        Level = LogLevel.Critical,
-        Message = "{fileLinePositionSpan}: Failed to apply code action '{title}' for diagnostic {diagnosticId}: {diagnosticMessage}.")]
-    public static partial void FailedToApplyChange(this ILogger logger, string title, string diagnosticId, string diagnosticMessage, Exception ex, FileLinePositionSpan fileLinePositionSpan);
-
-    [LoggerMessage(
-        EventId = 1005,
-        Level = LogLevel.Debug,
-        Message = "Calculating fix for {numberOfDiagnostics} instances of {diagnosticId}: {diagnosticMessage}.")]
-    public static partial void ApplyingCodeFixForMultiple(this ILogger logger, int numberOfDiagnostics, string diagnosticId, string diagnosticMessage);
-
-    [LoggerMessage(
-        EventId = 1003,
-        Level = LogLevel.Error,
-        Message = "No applicable changes were provided for {numberOfDiagnostics} instances of diagnostic {diagnosticId}: {diagnosticMessage}.")]
-    public static partial void NoApplicableChangesWereProvidedForMultiple(this ILogger logger, int numberOfDiagnostics, string diagnosticId, string diagnosticMessage);
-
-    [LoggerMessage(
-        EventId = 1004,
-        Level = LogLevel.Critical,
-        Message = "Failed to apply code for {numberOfDiagnostics} instances of diagnostic {diagnosticId}: {diagnosticMessage}.")]
-    public static partial void FailedToApplyChangeForMultiple(this ILogger logger, int numberOfDiagnostics, string diagnosticId, string diagnosticMessage, Exception ex);
-
 
 }

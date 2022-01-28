@@ -29,7 +29,7 @@ var cli = new CommandLineApplication(true);
 cli.Description = ApplicationInfo.VersionInfo;
 cli.HelpOption("-? | -h | --help");
 cli.Option("-p | --project", "Path to the project file(s)", CommandOptionType.MultipleValue);
-cli.Option("-n | --dry-run", "Log changes, but do not apply", CommandOptionType.NoValue);
+//cli.Option("-n | --dry-run", "Log changes, but do not apply", CommandOptionType.NoValue);
 cli.OnExecute(async () =>
 {
     if (cli.Arguments.Any(arg => arg.Value == null))
