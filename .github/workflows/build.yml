@@ -31,6 +31,6 @@ jobs:
     #- name: Test
     #  run: dotnet test --no-build --verbosity normal
     - name: Publish tool to GitHub registry if new version number
-      run: dotnet nuget push ./**/bin/Release/*.nupkg -k ${GITHUB_TOKEN} -s https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json --skip-duplicate --no-symbols 1
+      run: dotnet nuget push ./**/nupkg/*.nupkg -k ${GITHUB_TOKEN} -s https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json --skip-duplicate --no-symbols 1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
