@@ -7,10 +7,25 @@
 		<Nullable>enable</Nullable>
 		<Version>$(ToolVersion)</Version>
 
+		<IsPackable>true</IsPackable>
+		
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>principled-csharp</ToolCommandName>
 		<PackageOutputPath>./nupkg</PackageOutputPath>
+
+		<PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+		<title>Apply auto-fixes for source analyzers from the command line</title>
+		<PackageSummary>Apply auto-fixes for source analyzers from the command line.</PackageSummary>
+		<description>Apply auto-fixes for source analyzers from the command line.</description>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeBuildOutput>false</IncludeBuildOutput>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="readme.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Humanizer" Version="2.13.14" />
