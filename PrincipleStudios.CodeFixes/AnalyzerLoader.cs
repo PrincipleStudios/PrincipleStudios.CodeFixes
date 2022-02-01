@@ -29,7 +29,8 @@ class AnalyzerLoader
             from analyzer in project.AnalyzerReferences
             let optionalLoad = TryLoad(analyzer) as Optional<Assembly>.Some
             where optionalLoad != null
-            select (analyzer.Id, optionalLoad.Value)
+            group optionalLoad.Value by analyzer.Id into g
+            select (Id: g.Key, Value: g.First())
         ).ToDictionary(k => k.Id, k => k.Value);
 
         //var projectsById = workspace.CurrentSolution.Projects.ToDictionary(p => p.Id);
