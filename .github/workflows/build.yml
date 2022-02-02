@@ -28,7 +28,14 @@ jobs:
       run: dotnet build --no-restore --configuration Release
     #- name: Test
     #  run: dotnet test --no-build --verbosity normal
+
     - name: Publish tool to GitHub registry if new version number
+      if: ${{ github.ref != 'refs/heads/main' }}
       run: dotnet nuget push ./**/nupkg/*.nupkg -k ${GITHUB_TOKEN} -s https://nuget.pkg.github.com/$GITHUB_REPOSITORY_OWNER/index.json --skip-duplicate --no-symbols 1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish tool to NuGet registry if new version number
+      if: ${{ github.ref == 'refs/heads/main' }}
+      run: dotnet nuget push ./**/nupkg/*.nupkg -k ${NUGET_API_KEY} -s https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols 1
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
