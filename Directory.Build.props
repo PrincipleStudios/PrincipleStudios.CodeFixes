@@ -12,7 +12,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<ToolVersion>0.1.0-alpha.1</ToolVersion>
+		<ToolVersion>0.1.0</ToolVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
