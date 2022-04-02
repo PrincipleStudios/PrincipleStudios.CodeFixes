@@ -12,10 +12,10 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<ToolVersion>0.1.1</ToolVersion>
+		<ToolVersion>0.1.2-alpha.0</ToolVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)assets\logo_black_small.png" Pack="true" PackagePath="\" Visible="false"/>
-	</ItemGroup>	
+	</ItemGroup>
 </Project>
