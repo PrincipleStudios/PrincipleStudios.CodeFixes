@@ -17,5 +17,5 @@
 
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)assets\logo_black_small.png" Pack="true" PackagePath="\" Visible="false"/>
-	</ItemGroup>	
+	</ItemGroup>
 </Project>
